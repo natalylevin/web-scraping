@@ -10,7 +10,7 @@ public class Ynet extends BaseRobot {
     static HashMap<String, Integer> map = new HashMap<>();
 
     public static void main(String[] args) throws IOException {
-        new Ynet("https://www.ynet.co.il/home/0,7340,L-8,00.html").getWordsStatistics();
+        new Ynet("https://www.ynet.co.il/home/0,7340,L-8,00.html").getLongestArticleTitle();
     }
 
     public Ynet(String rootWebsiteUrl) throws IOException {
@@ -35,7 +35,6 @@ public class Ynet extends BaseRobot {
         for (String url : siteURL) {
             String words = "";
             Document web = Jsoup.connect(url).get();
-            System.out.println(url);
             for (Element h1 : web.getElementsByTag("h1")) {
                 words += (h1.text());
             }
@@ -49,7 +48,7 @@ public class Ynet extends BaseRobot {
             for (String word : wordsArray) {
                 if (map.containsKey(word)) {
                     map.put(word, map.get(word) + 1);
-                }else{
+                } else {
                     map.put(word, 1);
                 }
             }
@@ -59,13 +58,47 @@ public class Ynet extends BaseRobot {
     }
 
     @Override
-    public int countInArticlesTitles(String text) {
-
-        return 0;
+    public int countInArticlesTitles(String text) throws IOException {
+        int count = 0;
+        Document ynet = Jsoup.connect(getRootWebsiteUrl()).get();
+        for (Element container : ynet.getElementsByClass("layoutContainer")) {
+            for (Element title_small : container.getElementsByClass("slotTitle small")) {
+                if (title_small.text().contains(text)) {
+                    count++;
+                }
+            }
+            for (Element title_medium : container.getElementsByClass("slotTitle medium")) {
+                if (title_medium.text().contains(text)) {
+                    count++;
+                }
+            }
+        }
+        if (ynet.getElementsByClass("slotSubTitle").get(0).text().contains(text)) {
+            count++;
+        }
+        if (ynet.getElementsByClass("slotTitle").get(0).text().contains(text)) {
+            count++;
+        }
+        return count;
     }
-
     @Override
-    public String getLongestArticleTitle() {
-        return null;
+    public String getLongestArticleTitle() throws IOException {
+        int max = -1;
+        String title = "";
+        for (String url : siteURL) {
+            Document web = Jsoup.connect(url).get();
+            String words = "";
+            for (Element text_editor_paragraph_rtl : web.getElementsByClass("text_editor_paragraph rtl")) {
+                words += (text_editor_paragraph_rtl.text());
+            }
+            System.out.println(max);
+            if (words.length() > max) {
+                max = words.length();
+                for (Element h1 : web.getElementsByTag("h1")) {
+                    title = (h1.text());
+                }
+            }
+        }
+        return title;
     }
 }
