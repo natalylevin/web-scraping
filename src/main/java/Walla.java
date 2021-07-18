@@ -25,6 +25,7 @@ interface MapOrder {
 }
 
 class WallaRobot extends BaseRobot implements MapOrder {
+
     Map<String, Integer> map;
     ArrayList<String> sitesUrl;
 
@@ -40,15 +41,13 @@ class WallaRobot extends BaseRobot implements MapOrder {
 
         Element section = walla.getElementsByClass("css-1ugpt00 css-a9zu5q css-rrcue5 ").get(0);
         for (Element smallTeasers : section.getElementsByTag("a")) {
-            sitesUrl.add(smallTeasers.attributes().get("href"));
+            sitesUrl.add(String.valueOf(smallTeasers.attr("href").contains("/item")));
         }
     }
 
     @Override
     public Map<String, Integer> getWordsStatistics() throws IOException {
-        //access the sites
         for (String site : sitesUrl) {
-            //String for storage the whole text of the site
             String siteText;
             siteText = accessSite(site);
             String[] wordsOfArticle = siteText.split(" ");
@@ -59,15 +58,12 @@ class WallaRobot extends BaseRobot implements MapOrder {
 
     public String accessSite(String site) throws IOException {
         Document article;
-        //String for storage the whole text of the site
         String siteText = "";
         StringBuilder siteTextBuilder = new StringBuilder(siteText);
         article = Jsoup.connect(site).get();
-        //title
         Element titleSection = article.getElementsByClass("item-main-content").get(0);
         siteTextBuilder.append(titleSection.getElementsByTag("h1").get(0).text());
         siteTextBuilder.append(" ");
-        //sub-title
         for (Element subTitle : article.getElementsByClass("css-onxvt4")) {
             siteTextBuilder.append(" ");
             siteTextBuilder.append(subTitle.text());
@@ -104,10 +100,8 @@ class WallaRobot extends BaseRobot implements MapOrder {
         int longest = 0;
         for (String site : sitesUrl) {
             article = Jsoup.connect(site).get();
-            //title
             Element titleSection = article.getElementsByClass("item-main-content").get(0);
             String title = titleSection.getElementsByTag("h1").get(0).text();
-            //article body
             StringBuilder siteTextBuilder = new StringBuilder();
             for (Element articleBody : article.getElementsByClass("css-onxvt4")) {
                 siteTextBuilder.append(articleBody.text());
